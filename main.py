@@ -15,6 +15,8 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     dt = 0
+    score = 0
+    player_lives = 3
     #creating the groups to be used in the game loop
     updatable = pygame.sprite.Group() 
     drawable = pygame.sprite.Group() # ****
@@ -37,18 +39,30 @@ def main():
         updatable.update(dt) #calls the updat method on the 'updatable' group
         for a in asteroids: #loop to check collisions with ship
             if a.collides_with(player) == True:
-                log_event("player_hit")
-                print("Game Over")
-                sys.exit()
+                if player_lives == 0: #checks the lives and either respawns or game overs
+                    log_event("player_hit")
+                    print("Game Over " + "Asteroids hit: " + str(score))
+                    sys.exit()
+                else:
+                    log_event("player_hit")
+                    player_lives -= 1
+                    player.kill()
+                    player = Player(x=SCREEN_WIDTH / 2, y=SCREEN_HEIGHT / 2)
         for a in asteroids:
             for s in shots:
                 if s.collides_with(a) == True:
                     log_event("asteroid_shot")
                     a.split()
                     s.kill()
+                    score +=1
 
         for sprite in drawable: #loops through the drawable group and runs the draw method against each object
             sprite.draw(screen)                
+        font = pygame.font.SysFont("arial", 30)
+        score_text_surface = font.render("Asteroids hit: " + str(score), True, (255, 255, 255))
+        screen.blit(score_text_surface, (10, 10))
+        player_lives_text_surface = font.render("Respawns: " + str(player_lives), True, (255, 255, 255))
+        screen.blit(player_lives_text_surface, (10, 50))
         pygame.display.flip()#refresh display
         dt = clock.tick (60) / 1000 # ticks the clock. assigns dt to be the time bewteen frames. caps frame rate at 60
         
